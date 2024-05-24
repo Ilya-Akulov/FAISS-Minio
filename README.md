@@ -19,7 +19,7 @@
                        collection_name=NAME_COLLECTION)
     
 В модуле реализовано две функции:
- - .from_documents(docs_chunk:List[Document])
+ - .from_documents(docs_chunk:List\[Document\])
  - .as_retriever(search_type:str, search_kwargs:dict)
 
 ### Создание векторной базы из документов ###
@@ -48,3 +48,14 @@
                   docstore=docstore_db,
                   index_to_docstore_id=index_to_docstore_id,
                      )
+
+## Необходимые библиотеки ##
+Они устанавливаются при установки этого модуля
+ - boto3
+ - fastapi==0.89.1
+ - faiss-cpu==1.8.0
+ - langchain==0.2.0
+ - langchain-community==0.2.0
+ - langchain-core==0.2.1
+ - pydantic==1.10.15
+ - numpy==1.26.4
