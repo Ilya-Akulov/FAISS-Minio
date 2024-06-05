@@ -16,8 +16,11 @@
                        minio_bucket=BUCKET_NAME,
                        login_minio=LOGIN_MINIO,
                        password_minio=PASSWORD_MINIO,
-                       collection_name=NAME_COLLECTION)
-    
+                       collection_name=NAME_COLLECTION,
+                       dir_in_bucket_s3=PATH_IN_BUCKET_S3)
+
+Параметр "dir_in_bucket_s3" по умолчанию None и основная папка будет: "vectorstore"
+
 В модуле реализовано две функции:
  - .from_documents(docs_chunk:List\[Document\])
  - .as_retriever(search_type:str, search_kwargs:dict)
@@ -26,7 +29,7 @@
 
     vector_db = famin.from_documents(docs_chunk=doc_chunks)
 При выполненении функции происходит загрузка данных в Minio. 
-По умолчанию создается, если ее нет, папка "db_collections" в ней будут хранится все коллекции созданные с помощью библиотеки.
+По умолчанию создается, если ее нет, папка "vectorstore" в ней будут хранится все коллекции созданные с помощью библиотеки.
 В этой папке создается папка с названием коллекции "NAME_COLLECTION" и уже в ней будут хранится все данные в формате "json".
 
 Пример расположения файлов в бакете: "test_bucket/db_collections/test_collection/"

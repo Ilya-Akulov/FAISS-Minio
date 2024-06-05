@@ -3,16 +3,16 @@ import json
 import boto3
 import fastapi
 import numpy as np
-from typing import List
+from typing import List, Any
 from langchain.schema import Document
-from langchain.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceInstructEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import HuggingFaceInstructEmbeddings
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores.faiss import dependable_faiss_import
 
 
 class FaissMinio:
-    NAME_FOLDER_COLLECTIONS = 'db_collections'
+    NAME_FOLDER_COLLECTIONS = 'vectorstore'
 
     def __init__(self,
                  embedding_model: HuggingFaceInstructEmbeddings,
@@ -21,12 +21,17 @@ class FaissMinio:
                  minio_bucket: str,
                  login_minio: str,
                  password_minio: str,
-                 collection_name: str):
+                 collection_name: str,
+                 dir_in_bucket_s3: str = None):
         self._MINIO_HOST = minio_host
         self._MINIO_PORT = minio_port
         self._MINIO_BUCKET = minio_bucket
         self._EMBEDDING_MODEL = embedding_model
         self._COLLECTION_NAME = collection_name
+
+        if dir_in_bucket_s3 is not None:
+            self.NAME_FOLDER_COLLECTIONS = dir_in_bucket_s3
+
         self.check_collection_exist(login_minio=login_minio,
                                     password_minio=password_minio)
         self._s3 = boto3.resource('s3',
@@ -63,8 +68,9 @@ class FaissMinio:
                     'index_db_binary': index_db_binary}
 
         def save_minio(self,
-                       docs_chunk):
-            vector_db = from_documents(self, docs_chunk)
+                       docs_chunk,
+                      **kwargs):
+            vector_db = from_documents(self, docs_chunk, **kwargs)
             dict_atribute_to_minio = prepare_atribute(self, vector_db)
             for key, values in dict_atribute_to_minio.items():
                 obj = self._s3.Object(self._MINIO_BUCKET,
@@ -77,7 +83,8 @@ class FaissMinio:
 
     @_decorator_save_db
     def from_documents(self,
-                       docs_chunk: List[Document]):
+                       docs_chunk: List[Document],
+                       **kwargs: Any):
         vector_db = FAISS.from_documents(docs_chunk, self._EMBEDDING_MODEL)
         return vector_db
 
@@ -143,7 +150,8 @@ class FaissMinio:
 
     def as_retriever(self,
                      search_type: str,
-                     search_kwargs: dict):
+                     search_kwargs: dict,
+                    **kwargs:Any):
         vector_db = self._load_db()
         retriever_main = vector_db.as_retriever(search_type=search_type, search_kwargs=search_kwargs)
         return retriever_main
